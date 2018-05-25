@@ -1,0 +1,9 @@
+button{
+  border: none;
+  box-shadow: none;
+  background-image: none;
+}
+
+progress, trough{
+  min-height: 20px;
+}
