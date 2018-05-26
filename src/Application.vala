@@ -1,5 +1,5 @@
 /*
-* Copyright (c) {{yearrange}} cruelplatypus67 (https://surajmandalcell.github.io/)
+* Copyright (c) 2018 Suraj Mandal (https://surajmandalcell.github.io/)
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public
@@ -16,8 +16,11 @@
 * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 * Boston, MA 02110-1301 USA
 *
-* Authored by: cruelplatypus67 <https://surajmandalcell.github.io/>
+* Authored by: Suraj Mandal <https://surajmandalcell.github.io/>
 */
+
+// Dependencies --pkg=glib-2.0 --pkg=gtk+-3.0 --pkg=granite
+
 using Granite;
 using Granite.Widgets;
 using Gtk;
@@ -34,7 +37,7 @@ namespace Elementary_x_Installer {
 
         public void init_css() {
             // Load CSS
-            string css_file = "/mnt/sda3/Dropbox/Dev/Projects/git/ElementaryApps/Elementary-x-Installer/src/style.css";
+            string css_file = "style.css";
             var provider = new Gtk.CssProvider();
             try {
                 provider.load_from_path(css_file);
@@ -46,50 +49,74 @@ namespace Elementary_x_Installer {
 
         public void info_diag(){
             var dialog = new Granite.MessageDialog.with_image_from_icon_name (
-                "This is a primary text",
-                "This is a secondary, multiline, long text. This text usually extends the primary text and prints e.g: the details of an error.",
-                "applications-development",
+                "About",
+                "Install elementary-x gtk-theme which is based on official elementary theme.\n\nTo install plank theme and icon theme as shown in preview then Select from the drop down and click install",
+                "gtk-about",
                 Gtk.ButtonsType.CLOSE
              );
 
-            var custom_widget = new Gtk.CheckButton.with_label ("Custom widget");
-            custom_widget.show ();
+            // var custom_widget = new Gtk.CheckButton.with_label ("Custom widget");
+            // custom_widget.show ();
+            // dialog.custom_bin.add (custom_widget);
 
-            dialog.custom_bin.add (custom_widget);
             dialog.run ();
             dialog.destroy ();
         }
 
+        public void notify (string title, string message, int durationMillis, string urgency){
+            try{
+                string s = "notify-send -t %d -u %s -i info.png \"%s\" \"%s\"".printf(durationMillis, urgency, title, message);
+                Process.spawn_command_line_sync(s);
+            }
+
+            catch (Error e){
+                stderr.printf("Error: %s\n", e.message);
+            }
+        }
+
+        // Install theme function
+        public void installTheme(){
+        }
+
         protected override void activate () {
             var window = new Gtk.ApplicationWindow (this);
-            var css = new Gtk.CssProvider();
             var main = new Gtk.Grid();
-
             window.title = "Elementary_x_Installer";
             window.set_decorated(false);
-            window.set_default_size (50, -1);
+            window.set_default_size (52, -1);
             this.init_css();
 
+            // Close button
             var buttonClose = new Button.from_icon_name ("dialog-close" , BUTTON);
             buttonClose.clicked.connect (() => {
                 window.close();
                 });
             main.attach(buttonClose, 0, 0, 1, 1);
 
+            // Info button
             var buttonInfo = new Button.from_icon_name("documentinfo", BUTTON);
             buttonInfo.clicked.connect (() => {
                 info_diag();
             });
             main.attach(buttonInfo, 0, 1, 1, 1);
 
-            var Progress = new Gtk.ProgressBar();
-            main.attach(Progress, 1, 0, 2, 2);
 
+
+            // Progress bar
+            var bar = new Gtk.ProgressBar();
+            main.attach(bar, 1,0,1,2);
+
+
+            // Install button
             var buttonInstall = new Button.with_label ("Install");
-    		buttonInstall.clicked.connect (() => {
+            buttonInstall.clicked.connect (() => {
                 buttonInstall.label = "Installing...";
+                string tit="Theme Installed!",desc="elementary-x has been sucessfully installed.",priority="normal";
+                notify(tit, desc, 2000, priority);
+                installTheme();
+                buttonInstall.label = "Installed!";
             });
-        	main.attach(buttonInstall, 3, 0, 1, 2);
+            main.attach(buttonInstall, 3, 0, 1, 2);
 
             window.add (main);
             window.show_all ();
